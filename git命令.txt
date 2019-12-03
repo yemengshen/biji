@@ -1,0 +1,157 @@
+git的工作流：
+工作区：即自己当前分支所修改的代码，git add xx 之前的！不包括 git add xx 和 git commit xxx 之后的。
+暂存区：已经 git add xxx 进去，且未 git commit xxx 的。
+本地分支：已经git commit -m xxx 提交到本地分支的。
+
+git的基本命令：
+git checkout "分支"  			--------切换分支
+git log 				--------查看当前分支的提交记录
+git show commit_id   			--------查看某一次提交的记录，配合git log
+git branch 				--------查看当前是哪个分支
+git branch -r 				--------展示所有的分支
+git add .				--------将当前所有修改过、删除过的文件添加到暂存区
+git commit -a -m "说明信息"  		--------将当前文件提交到本地分支
+git pull 				--------拉取远程分支的最新信息
+每一次推送前要先使用git pull，
+git push 				--------推送到远程分支
+git branch "分支名称"  			--------新建分支
+git checkout  – b "分支名称"		--------新建分支，并切换到该分支
+
+
+https://blog.csdn.net/asoar/article/details/84111841
+*****
+git revert 和 git reset的区别
+- git revert是用一次新的commit来回滚之前的commit，此次提交之前的commit都会被保留；
+- git reset是回到某次提交，提交及之前的commit都会被保留，但是此commit id之后的修改都会被删除
+创建workspace分支并切换到workspace
+
+git chekcout –b workspace
+1、在工作区的代码
+git checkout -- a.txt   # 丢弃某个文件，或者
+git checkout -- .       # 丢弃全部
+注意：git checkout – . 丢弃全部，也包括：新增的文件会被删除、删除的文件会恢复回来、修改的文件会回去。这几个前提都说的是，回到暂存区之前的样子。对之前保存在暂存区里的代码不会有任何影响。对commit提交到本地分支的代码就更没影响了。当然，如果你之前压根都没有暂存或commit，那就是回到你上次pull下来的样子了。
+
+2、代码git add到缓存区，并未commit提交
+git reset HEAD .  或者
+git reset HEAD a.txt
+这个命令仅改变暂存区，并不改变工作区，这意味着在无任何其他操作的情况下，工作区中的实际文件同该命令运行之前无任何变化
+
+3、git commit到本地分支、但没有git push到远程
+git log # 得到你需要回退一次提交的commit id
+git reset --hard <commit_id>  # 回到其中你想要的某个版
+或者
+git reset --hard HEAD^  # 回到最新的一次提交
+或者
+git reset HEAD^  # 此时代码保留，回到 git add 之前
+
+4、git push把修改提交到远程仓库
+1）通过git reset是直接删除指定的commit
+git log # 得到你需要回退一次提交的commit id
+git reset --hard <commit_id>
+git push origin HEAD --force # 强制提交一次，之前错误的提交就从远程仓库删除
+2）通过git revert是用一次新的commit来回滚之前的commit
+git log # 得到你需要回退一次提交的commit id
+git revert <commit_id>  # 撤销指定的版本，撤销也会作为一次提交进行保存
+
+强行回退版本，包括远程版本库，谨慎使用，最好不用
+git log # 得到你需要回退一次提交的commit id
+git reset --hard <commit_id>
+git push origin HEAD --force # 强制提交一次，之前错误的提交就从远程仓库删除
+
+合并分支
+#Git创建Develop分支的命令
+git checkout -b develop master
+#将Develop分支发布到Master分支的命令
+git checkout master
+git merge --no-ff develop
+注意：在哪个分支上打tag一定要先提交该分支到远程gitlab仓库
+
+标签（tag）操作
+1. 查看所有标签
+git tag
+默认标签是打在最新提交的commit上的
+
+2.本地打新标签
+git tag <tag name> 
+or
+git tag <tag name> 16098ee1cbbc8a1884e19c6681735e1792f9b577 // 在某个commit上打tag
+// git log 查看commit版本号
+例如：打v1.1.0标签
+git tag v1.1.0
+ 
+
+3. 附注标签
+git tag -a <tag name> -m <message>
+例如, 打v1.1.0标签
+git tag -a v1.1.0 -m 'v1.1.0 release'
+4. 本地推送到远程
+
+git push origin <tag name>  // 推送一个标签到远程
+or
+git push origin --tags   // 推送全部未推送的本地标签
+5. 本地删除标签
+
+git tag -d <tag name>
+6. 并远程删除标签
+
+git push origin :refs/tags/<tag name>   // 本地tag删除了，在执行该句，删除远程tag
+如果我们需要在现有的分支代码基础上，复制代码到新分支进行开发，并推送至远程仓库，可以进行如下操作：
+注：被复制的分支代码(ibis35)，创建新的分支(ibis35-dev)
+1. 通过git bash，切换到被copy的分支（ibis35），并且从远端拉取最新版本
+$ git checkout ibis35
+$ git pull
+
+2. 从当前分支拉copy开发分支
+$ git checkout -b ibis35-dev
+
+3. 把新建的分支push到远端
+$git push origin ibis35-dev
+
+4. 拉取远端分支
+$ git pull (经过验证，当前的分支并没有和本地分支关联，根据提示进行下一步)
+
+5. 关联
+$ git branch --set-upstream-to=origin/ibis35-dev
+
+6. 再次拉取 验证
+$ git pull
+
+1、把源码clone到本地库中（master分支）。
+
+
+git clone [gitsite  git远程网址]
+
+2、在本地新建一个与远程的dev版本相同(被合并的版本)的dev分支
+
+
+git checkout -b dev origin/dev
+
+3、返回到master版本
+git checkout master
+
+4、把本地的dev合并到master
+
+
+git merge dev
+
+5、把本地的master同步到远程
+
+git push origin master
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,4 @@
+@SpringBootApplication(scanBasePackages = "com.jiuwei")
+@EnableDiscoveryClient
+@EnableFeignClients(basePackages = "com.jiuwei")
+配置扫描fegin的jar包，导入spring的bean工厂，方便调用其他服务
