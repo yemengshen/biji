@@ -16,7 +16,7 @@ git pull 				--------拉取远程分支的最新信息
 git push 				--------推送到远程分支
 git branch "分支名称"  			--------新建分支
 git checkout  – b "分支名称"		--------新建分支，并切换到该分支
-
+git remote add origin https://github.com/yemengshen/biji.git
 
 https://blog.csdn.net/asoar/article/details/84111841
 *****
