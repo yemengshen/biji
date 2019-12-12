@@ -5,12 +5,16 @@ ZSetOperations：zset类型数据操作
 HashOperations：针对map类型的数据操作
 ListOperations：针对list类型的数据操作
 
+当有多表数据类似时，将多表的数据以一个最大的量度读入redis缓存，再将从redis将数据以分页的方式读出，再将数据返回
+//与分页效果一下的数据。
+operation.reverseRangeWithScores(key, start.longValue(), end);
 //判断key是否存在
 redisTemplate.hasKey(key);
 //zset内部是按分数来排序的
 ZSetOperations<T, T> zSetOperations = redisTemplate.opsForZSet();
 zSetOperations.add(key, value, socre);
-
+//与分页效果一下的数据。
+operation.reverseRangeWithScores(key, start.longValue(), end);
 //String
 ValueOperations<T, T> operation = redisTemplate.opsForValue();
 operation.set(key,value);
