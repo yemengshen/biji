@@ -1,0 +1,186 @@
+配置config
+extends JFinalConfig实现未实现的方法
+ /**
+     * 配置常量
+     */
+    public void configConstant(Constants constants) {
+        //开启开发模式
+        constants.setDevMode(true);
+        //加载外部配置文件
+        loadPropertyFile("db.properties");
+        //开启支持注解，支持 Controller、Interceptor 之中使用 @Inject 注入业务层，并且自动实现 AOP
+        constants.setInjectDependency(true);
+        //配置json
+        constants.setJsonFactory(new FastJsonFactory());
+        //配置转换json数据格式的时间格式
+        constants.setJsonDatePattern("yyyy-MM-dd HH:mm:ss");
+    }
+
+    /**
+     * 配置路由
+     */
+    public void configRoute(Routes routes) {
+        //配置路由，/hello默认访问HelloController的index()方法，如果是/hello/sayHello，将访问HelloController的sayHello方法
+        routes.add("/hello", HelloController.class);
+        routes.add("/login", LoginController.class, "/");
+        //routes.add("/", EnjoyController.class,"/");
+        routes.add("/", UserController.class, "/");
+        routes.add("/student", StudentController.class, "/");
+    }
+
+    /**
+     * 配置模板
+     */
+    public void configEngine(Engine engine) {
+
+    }
+
+    /**
+     * 配置插件
+     */
+    public void configPlugin(Plugins plugins) {
+        //配置druid连接池
+        DruidPlugin db = new DruidPlugin(getProperty("jdbcUrl"), getProperty("user"), getProperty("password"));
+        plugins.add(db);
+        //ActiveRecord是作为JFinal的Plugin而存在的，所以使用时需要在JFinalConfig中配置ActiveRecordPlugin
+        ActiveRecordPlugin activeRecordPlugin = new ActiveRecordPlugin(db);
+//        activeRecordPlugin.addMapping("user", User.class);
+//        activeRecordPlugin.addMapping("student", Student.class);
+//        activeRecordPlugin.addMapping("course", Course.class);
+        //使用生成的配置文件加入使用
+        _MappingKit.mapping(activeRecordPlugin);
+        //展示sql语句
+        activeRecordPlugin.setShowSql(true);
+        RedisPlugin redisPlugin = new RedisPlugin("redis", "10.0.50.83");
+        plugins.add(redisPlugin);
+        plugins.add(activeRecordPlugin);
+    }
+
+    /**
+     * 配置全局拦截器
+     */
+    public void configInterceptor(Interceptors interceptors) {
+        // 添加控制层全局拦截器
+        interceptors.addGlobalActionInterceptor(new GlobalActionInterceptor());
+
+        // 添加业务层全局拦截器
+       interceptors.addGlobalServiceInterceptor(new GlobalServiceInterceptor());
+    }
+
+    /**
+     * 配置处理器
+     */
+    public void configHandler(Handlers handlers) {
+
+    }
+
+2.配置controller层
+
+routes.add("/hello", HelloController.class);
+        routes.add("/login", LoginController.class, "/");
+        //routes.add("/", EnjoyController.class,"/");
+        routes.add("/", UserController.class, "/");
+        routes.add("/student", StudentController.class, "/");
+路径有此开始+方法名
+3.配置service层
+@Inject
+    private StudentService studentService;
+使用注解在controller和Invocation层使用
+4.使用dao层
+private Student studentDao=new Student().dao();
+由model层使用dao方法创建
+也可以使用model层创建使用数据库方法
+public void add(){
+        Student student=new Student();
+        student.setCourseId(1);
+        student.setName("李柳");
+        student.save();
+    }
+    public void update(){
+        Student student=new Student();
+        student.setId(1);
+        student.setCourseId(1);
+        student.setName("李柳");
+        student.update();
+    }
+    public void find(){
+        Student byId = studentDao.findById(1);
+    }
+    public void delete(){
+        studentDao.deleteById(3);
+    }
+4.使用多表联合查询数据
+String sql = "select b.*, u.name as u_name from student b inner join course u on b.course_id=u.id ";
+List<Student> studentList= studentDao.find(sql);
+5.配置数据视图
+package com.jiuwei.generator;
+
+import com.jfinal.kit.PathKit;
+import com.jfinal.kit.Prop;
+import com.jfinal.kit.PropKit;
+import com.jfinal.plugin.activerecord.generator.Generator;
+import com.jfinal.plugin.druid.DruidPlugin;
+
+import javax.sql.DataSource;
+
+
+
+public class GeneratorDemo {
+
+    public static DataSource getDataSource() {
+        Prop p = PropKit.use("db.properties");
+        String url = p.get("jdbcUrl");
+        String username = p.get("user");
+        String password = p.get("password");
+        String driverClassName = p.get("driverClassName");
+
+        DruidPlugin dp = new DruidPlugin(url, username, password, driverClassName);
+        dp.start();
+        DataSource dataSource = dp.getDataSource();
+        return dataSource;
+    }
+
+    public static void main(String[] args) {
+        // base model 所使用的包名
+        String baseModelPackageName = "com.jiuwei.model.base";
+        // base model 文件保存路径
+        String baseModelOutputDir = PathKit.getWebRootPath() + "/src/main/java/com/jiuwei/model/base";
+
+        // model 所使用的包名 (MappingKit 默认使用的包名)
+        String modelPackageName = "com.jiuwei.model";
+        // model 文件保存路径 (MappingKit 与 DataDictionary 文件默认保存路径)
+        String modelOutputDir = baseModelOutputDir + "/..";
+
+        // 创建生成器
+        Generator gernerator = new Generator(getDataSource(), baseModelPackageName, baseModelOutputDir, modelPackageName, modelOutputDir);
+        // 设置数据库方言
+        // gernerator.setDialect(new MysqlDialect());
+
+        // 添加不需要生成的表名
+        // gernerator.addExcludedTable("tableName");
+
+        // 设置是否在 Model 中生成 dao 对象
+        gernerator.setGenerateDaoInModel(false);
+
+        // 设置是否生成字典文件
+        gernerator.setGenerateDataDictionary(true);
+
+        // 设置需要被移除的表名前缀用于生成modelName。例如表名 "osc_user"，移除前缀 "osc_"后生成的model名为 "User"而非 OscUser
+        // gernerator.setRemovedTableNamePrefixes("sys_");
+
+        // 生成
+        gernerator.generate();
+    }
+}
+
+
+6.将生成的视图加入config
+//使用生成的配置文件加入使用
+  _MappingKit.mapping(activeRecordPlugin);
+
+若输出的介绍信息小于20字，提示
+
+
+
+
+

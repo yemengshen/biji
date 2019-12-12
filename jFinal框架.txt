@@ -1,0 +1,168 @@
+Jfinal框架
+基于JFinal的web项目需要创建一个继承自JFinalConfig类的子类，该类用于对整个web项目进行配置。
+
+1.JFinalConfig子类需要实现六个抽象方法，如下所示：
+public class DemoConfig extends JFinalConfig {
+    public void configConstant(Constants me) {}
+    public void configRoute(Routes me) {}
+    public void configEngine(Engine me) {}
+    public void configPlugin(Plugins me) {}
+    public void configInterceptor(Interceptors me) {}
+    public void configHandler(Handlers me) {}
+}
+
+//配置druid连接池
+        DruidPlugin db = new DruidPlugin(getProperty("jdbcUrl"),getProperty("user"),getProperty("password"));
+        plugins.add(db);
+        //ActiveRecord是作为JFinal的Plugin而存在的，所以使用时需要在JFinalConfig中配置ActiveRecordPlugin
+        ActiveRecordPlugin activeRecordPlugin = new ActiveRecordPlugin(db);
+        activeRecordPlugin.addMapping("user", User.class);
+        //展示sql语句
+        activeRecordPlugin.setShowSql(true);
+        plugins.add(activeRecordPlugin);
+
+读取配置文件
+1. //加载外部配置文件
+loadPropertyFile("db.properties");
+getProperty("jdbcUrl"),
+getProperty("user"),
+getProperty("password")
+2.PropKit 读取配置
+userName=james
+email=no-reply@jfinal.com
+devMode=true
+PropKit.use("config.txt");
+String userName = PropKit.get("userName");
+String email = PropKit.get("email");
+Controller是
+
+重要用法：如果 action 形参是一个 model 或者 bean，原先通过 getBean(User.class, "") 获取时第二个参数为空字符串或null，那么与之等价的形参注入只需要用一下 @Para("") 注解即可：
+public void action(@Para("")User user) { …. }
+
+Before可以将拦截器配置为Class级别与Method级别，前者将拦截本类中所有方法，后者仅拦截本方法。此外Before可以同时配置多个拦截器，只需用在大括号内用逗号将多个拦截器进行分隔即可。
+
+    除了 Class 与 Method 级别的拦截器以外，JFinal 还支持全局拦截器以及 Routes 拦截器，全局拦截器分为控制层全局拦截器与业务层全局拦截器，前者拦截控制 层所有 Action 方法，后者拦截业务层所有方法。
+
+    全局拦截器需要在 YourJFinalConfig 进行配置，以下是配置示例：
+
+public class YourJFinalConfig extends JFinalConfig {
+   public void configInterceptor(Interceptors me) {
+      // 添加控制层全局拦截器
+      me.addGlobalActionInterceptor(new GlobalActionInterceptor());
+  
+      // 添加业务层全局拦截器
+      me.addGlobalServiceInterceptor(new GlobalServiceInterceptor());
+  
+      // 为兼容老版本保留的方法，功能与addGlobalActionInterceptor完全一样
+      me.add(new GlobalActionInterceptor());
+   }
+}
+
+
+@Inject 注解可以向 Controller 以及 Interceptor 中注入依赖对象，使用注入功能需要如下配置：
+public void configConstant(Constants me) {
+    // 开启对 jfinal web 项目组件 Controller、Interceptor、Validator 的注入
+    me.setInjectDependency(true);
+    
+    // 开启对超类的注入。不开启时可以在超类中通过 Aop.get(...) 进行注入
+    me.setInjectSuperClass(true);
+}
+
+如果需要创建的对象并不是 jfinal 接管的，那么可以使用 Aop.get(...) 方法进行依赖对象的创建以及注入，例如：
+
+public class MyKit {
+   
+   static Service service = Aop.get(Service.class);
+   
+   public void doIt() {
+      service.justDoIt();
+   }
+}
+    由于 MyKit 的创建并不是 jfinal 接管的，所以不能使用 @Inject 进行依赖注入。 而 Controller、Interceptor 的创建和组装是由 jfinal 接管的，所以可以使用 @Inject 注入依赖。
+
+@Inject 注解还支持指定注入的实现类，例如下面的代码，将为 Service 注入 MyService 对象：
+
+@Inject(MyService.class)
+Service service;
+
+ActiveRecord 是 JFinal 最核心的组成部分之一，通过 ActiveRecord 来操作数据库，将极大地减少代码量，极大地提升开发效率。
+
+    ActiveRecord 模式的核心是：一个 Model 对象唯一对应数据库表中的一条记录，而对应关系依靠的是数据库表的主键值。
+
+   因此，ActiveRecord 模式要求数据库表必须要有主键。当数据库表没有主键时，只能使用 Db + Record 模式来操作数据库。
+
+// 分页查询年龄大于18的user,当前页号为1,每页10个user
+Page<User> userPage = User.dao.paginate(1, 10, "select *", "from user where age > ?", 18);
+
+配置连接数据库：
+activeRecordPlugin.addMapping("user", User.class);
+
+复合主键
+    JFinal ActiveRecord 从 2.0 版本开始，采用极简设计支持复合主键，对于 Model 来说需要在映射时指定复合主键名称，以下是具体例子：
+
+ActiveRecordPlugin arp = new ActiveRecordPlugin(druidPlugin);
+// 多数据源的配置仅仅是如下第二个参数指定一次复合主键名称
+arp.addMapping("user_role", "userId, roleId", UserRole.class);
+ 
+//同时指定复合主键值即可查找记录
+UserRole.dao.findByIds(123, 456);
+ 
+//同时指定复合主键值即可删除记录
+UserRole.dao.deleteByIds(123, 456);
+
+
+配置redis
+1.配置pom文件
+<dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-pool2</artifactId>
+      <version>2.5.0</version>
+    </dependency>
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>2.5.0</version>
+    </dependency>
+    <dependency>
+    <groupId>de.ruedigermoeller</groupId>
+    <artifactId>fst</artifactId>
+    <version>2.43</version>
+  </dependency>
+2.使用redisPlugin插件
+RedisPlugin redisPlugin=new RedisPlugin("redis","10.0.50.83");
+plugins.add(redisPlugin);
+3.在类中使用
+Cache redis = Redis.use("redis");
+redis.set("name1","zhangsan");
+String name2020 = redis.get("name1");
+System.out.println(name2020);
+
+返回json格式数据
+<dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>fastjson</artifactId>
+      <version>1.2.55</version>
+</dependency>
+//配置json
+       constants.setJsonFactory(new FastJsonFactory());
+       constants.setJsonDatePattern("yyyy-MM-dd HH:mm:ss");
+renderJson(new ResultListBo<>());
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

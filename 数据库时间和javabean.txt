@@ -1,0 +1,19 @@
+POJO（set、get省略）：
+
+private Integer userId;
+	private String userName;
+	private String password;
+	private Integer credits;
+	private Date lastVisit;
+	private String lastIp;
+
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+	public Date getLastVisit() {
+		return lastVisit;
+	}
+注：
+使用mybatis查询数据时，如果数据库存储的是timestamp、datetime、date、time等时间类型，而Java bean也使用的是date类型，mybatis会自动将date类型转换为unix long时间eg:1503912320000，而不是时间格式。 
+解决方式有两种： 
+1.将Java bean 中的类型改为String类型。 
+2.在java bean 中date类型的get方法上加上注解@JsonFormat 
+jackson中有一个@JsonFormat注解，将它配置到Date类型的get方法上后，jackson就会按照配置的格式转换日期类型。如上。
