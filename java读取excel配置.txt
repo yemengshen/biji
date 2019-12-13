@@ -1,0 +1,135 @@
+引入依赖：
+<dependency>
+    <groupId>org.apache.poi</groupId>
+    <artifactId>poi</artifactId>
+    <version>4.0.1</version>
+</dependency>
+<dependency>
+   <groupId>org.apache.poi</groupId>
+   <artifactId>poi-ooxml</artifactId>
+   <version>4.0.1</version>
+</dependency>
+一个excel表格：
+HSSFWorkbook wb = new HSSFWorkbook();
+一个工作表格（sheet）：
+HSSFSheet sheet = wb.createSheet("测试表格");
+一行（row）：
+HSSFRow row1 = sheet.createRow(0);
+一个单元格（cell）：
+HSSFCell cell2 = row2.createCell((short)0)
+单元格格式（cellstyle）：
+HSSFCellStyle style4 = wb.createCellStyle()
+单元格内容格式（）
+HSSFDataFormat format= wb.createDataFormat();
+NUMERIC
+
+数字
+
+
+STRING
+
+字符串
+
+
+FORMULA
+
+公式
+
+
+BLANK
+
+空白
+
+
+BOOLEAN
+
+布尔型
+
+
+ERROR
+
+错误
+
+获取sheet的数量
+hssfWorkbook.getNumberOfSheets();
+
+
+POI处理Excel的核心类
+Workbook
+Workbook是所有用来创建或维护excel文件的类所要实现的接口，这个接口在
+org.apache.poi.ss.usermodel下。实现这个接口的类包括。
+HSSFWorkbook：这个类包含了读取或写入.xls格式文件的方法。能处理的版本包括 97-2003.
+XSSFWorkbook：这个类包含了读取或写入.xlsx或.xls文件格式的方法，能够处理2007及以后版本的文档。
+这两个类用来创建Excel文件，因此对应于Excel文件。
+HSSFWorkbook
+这个是org.apache.poi.hssf.usermodel包下的一个类,实现了Workbook接口，用来处理.xls格式的文件。HSSFWorkbook类包含许多方法，然而仅能处理xls格式的文档。
+
+XSSFWorkbook
+这个类即能处理低版本也能处理高版本Excel文件的格式。该类在org.apache.xssf.usemodel包下，并且实现了Workbook接口。
+
+Sheet
+Sheet是org.apache.poi.ss.usermodel包下的一个接口，该接口是所有用来创建指定名称电子表格的类所需要实现的接口。
+两个实现类包括。
+
+XSSFSheet
+HSSFSheet
+这两个类用来创建电子表格，当通过XSSFWorkbook创建好Excel文件后，需要使用XSSFSheet来创建电子表格，HSSFWorkbook创建的Excel文件则是通过HSSFSheet来创建电子表格。下面的行，单元格同理。
+
+Row
+这个接口在org.apache.poi.ss.usermodel包下，用来表示电子表单中的行，所有用来创建行对象的类都要实现这个接口。
+实现类包括
+
+XSSFRow
+HSSFRow
+Cell
+这个接口在org.apache.poi.ss.usermodel包下。所以用来处理单元格的类都要实现该接口。单元格可以有不同的属性，如blank,numeric,date,error等。每个单元格都有一个编号。
+实现类包括
+
+XSSFCell
+HSSFCell
+
+类主要是完成属性，样式等的设置。
+
+XSSFCellStyle
+这个类在org.apache.poi.xssf.usermodel包下，提供了电子表单中与单元格内容格式相关的信息。
+
+HSSFColor
+这个类在org.apache.poi.hssf.util包下。用来处理颜色。
+
+XSSFColor
+这个类在org.apache.poi.xssf.usermodel包下。用来描述XSSFWorkbook中单元格颜色。
+
+XSSFFont
+这个类在org.apache.poi.xssf.usermodel包下。实现了Font接口，用来处理字体。
+
+XSSFHyperlink
+这个类在org.apache.poi.xssf.usermodel包下。实现了Hyperlink接口，用来设置超链接。
+
+XSSFPrintSetup
+这个类在org.apache.poi.xsssf.usermodel包下。实现了PrintSetup接口。用来设置与打印相关的属性。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

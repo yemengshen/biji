@@ -1,0 +1,1 @@
+配置中文乱码，字体大小不一致：Settings-->Editor-->Font-->Fallback font-->SimHei
