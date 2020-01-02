@@ -1,3 +1,4 @@
+公司Git使用，一般在分支上开发，开发前最好将master代码合并到分支代码，开发完后由测试人员合并到release分支，最后再由主管人员将relase分支合并到master分支
 git的工作流：
 工作区：即自己当前分支所修改的代码，git add xx 之前的！不包括 git add xx 和 git commit xxx 之后的。
 暂存区：已经 git add xxx 进去，且未 git commit xxx 的。
